@@ -2,122 +2,121 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Nyāya Textual Tree Map</title>
+  <title>न्यायग्रन्थाः - Final Textual Tree</title>
 
-  <!-- Load D3.js -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
 
   <style>
     body {
       font-family: 'Noto Sans Devanagari', sans-serif;
-      background: #f0f0f0;
+      background: #f9f9f9;
       margin: 0;
-      padding: 0;
+      padding: 10px;
     }
 
     svg {
       background: white;
-      margin: 20px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
       display: block;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      margin: auto;
     }
 
     .link {
       fill: none;
-      stroke: #999;
-      stroke-opacity: 0.6;
-      stroke-width: 2px;
+      stroke: #aaa;
+      stroke-width: 1.5px;
     }
 
     .node circle {
       fill: #555;
-      stroke: white;
-      stroke-width: 1.5px;
+      r: 4px;
     }
 
     .node text {
-      font-size: 14px;
-      fill: #333;
+      font-size: 15px;
+      fill: #222;
     }
 
     .clickable {
       fill: blue;
-      text-decoration: underline;
       cursor: pointer;
+      text-decoration: underline;
     }
   </style>
 </head>
 
 <body>
 
-<svg width="1200" height="800"></svg>
+<svg width="800" height="600"></svg> <!-- Increased page size -->
 
 <script>
-// ---- Define the tree data ----
+// Define tree data
 const data = {
-  name: "Nyāya Texts",
+  name: "न्यायग्रन्थाः",
   children: [
     {
-      name: "न्यायसूत्रभाष्यम् (वार्तिकसहितम्)",
+      name: "न्यायसूत्रभाष्यम्",
       children: [
-        { name: "न्यायसूत्राणि", link: "#" }
+        { name: "न्यायसूत्राणि", link: "#" },
+        { name: "वार्तिकम्", link: "#" },
+        { name: "टीका", link: "#" }
       ]
     },
     {
-      name: "तत्त्वचिन्तामणिः (४ पृ)",
+      name: "तत्त्वचिन्तामणिः",
       children: [
-        { name: "तत्त्वचिन्तामणौ शब्दखण्डः", link: "#" }
+        { name: "शब्दखण्डः", link: "#" },
+        { name: "सप्तदशखण्डः", link: "#" },
+        { name: "आर्षखण्डः", link: "#" }
       ]
     },
-    { name: "तत्त्वार्थसूत्रम् (१० पृ)", link: "#" },
-    { name: "तर्कसङ्ग्रहः (९ पृ)", link: "#" },
-    { name: "तर्कभाषा", link: "#" },
-    { name: "तर्कशास्त्रम्", link: "#" },
-    { name: "न्यायकुसुमाञ्जली (६ पृ)", link: "#" },
-    { name: "न्यायसिद्धान्तमुक्तावली", link: "#" },
-    { name: "पूर्वपक्षीयव्याप्तिः", link: "#" },
-    { name: "सर्वलक्षणपदार्थलक्षणसंग्रहः", link: "#" }
+    {
+      name: "तर्कसङ्ग्रहः",
+      children: [
+        { name: "प्रस्तावना", link: "#" },
+        { name: "सप्तपदार्थ", link: "#" },
+        { name: "दृष्टान्तखण्डः", link: "#" }
+      ]
+    }
   ]
 };
 
-// ---- Basic SVG Setup ----
-const width = 1200;
-const height = 800;
+const width = 800;
+const height = 600;
 
 const svg = d3.select("svg")
-  .attr("viewBox", [-width/2, -height/2, width, height]);
+  .attr("viewBox", [0, 0, width, height]); // Top-left start
 
-const treeLayout = d3.tree().size([width - 200, height - 200]);
+const treeLayout = d3.tree()
+  .size([height - 80, width - 200]); // Reduce margin inside layout
 const root = d3.hierarchy(data);
 
 treeLayout(root);
 
-// ---- Draw Links (branches) ----
+// Draw links
 svg.selectAll(".link")
   .data(root.links())
   .join("path")
   .attr("class", "link")
   .attr("d", d3.linkVertical()
-    .x(d => d.x)
-    .y(d => d.y));
+    .x(d => d.y + 100)  // More margin horizontally
+    .y(d => d.x + 40)); // Slight margin vertically
 
-// ---- Draw Nodes ----
+// Draw nodes
 const node = svg.selectAll(".node")
   .data(root.descendants())
   .join("g")
   .attr("class", "node")
-  .attr("transform", d => `translate(${d.x},${d.y})`);
+  .attr("transform", d => `translate(${d.y + 100},${d.x + 40})`);
 
-// ---- Circle markers ----
 node.append("circle")
-  .attr("r", 5)
+  .attr("r", 4)
   .style("fill", d => d.children ? "#555" : "#999");
 
-// ---- Node Text (labels) ----
 node.append("text")
-  .attr("dy", -10)
-  .attr("x", d => d.children ? -12 : 12)
+  .attr("dy", 5)
+  .attr("x", d => d.children ? -10 : 10)
   .attr("text-anchor", d => d.children ? "end" : "start")
   .attr("class", d => d.data.link ? "clickable" : "")
   .text(d => d.data.name)
