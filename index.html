@@ -1,137 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Textual Tree Map</title>
+  <meta charset="UTF-8">
+  <title>Nyāya Textual Tree Map</title>
 
-    <!-- Local fallback jQuery and jsTree (upload them too or use CDN) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jstree@3.3.12/dist/themes/default/style.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jstree@3.3.12/dist/jstree.min.js"></script>
+  <!-- Load D3.js -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
 
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 20px;
-            background: #f8f8f8;
-        }
-        #tree {
-            max-width: 800px;
-            margin: auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-        }
-    </style>
+  <style>
+    body {
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      background: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    svg {
+      background: white;
+      margin: 20px auto;
+      display: block;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .link {
+      fill: none;
+      stroke: #999;
+      stroke-opacity: 0.6;
+      stroke-width: 2px;
+    }
+
+    .node circle {
+      fill: #555;
+      stroke: white;
+      stroke-width: 1.5px;
+    }
+
+    .node text {
+      font-size: 14px;
+      fill: #333;
+    }
+
+    .clickable {
+      fill: blue;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
 </head>
+
 <body>
 
-<h2>Textual Tree Map</h2>
-
-<div id="tree"></div>
+<svg width="1200" height="800"></svg>
 
 <script>
-    $(function () {
-        $('#tree').jstree({
-            'core': {
-                'data': [
-                    {
-                        "text": "Main Home",
-                        "a_attr": { "href": "https://example.com/mainhome" },
-                        "state": { "opened": true },
-                        "children": [
-                            {
-                                "text": "Chapter 1",
-                                "a_attr": { "href": "https://example.com/chapter1" },
-                                "children": [
-                                    {
-                                        "text": "Section 1.1",
-                                        "a_attr": { "href": "https://example.com/section11" }
-                                    },
-                                    {
-                                        "text": "Section 1.2",
-                                        "a_attr": { "href": "https://example.com/section12" }
-                                    },
-                                    {
-                                        "text": "Section 1.3",
-                                        "a_attr": { "href": "https://example.com/section13" }
-                                    }
-                                ]
-                            },
-                            {
-                                "text": "Chapter 2",
-                                "a_attr": { "href": "https://example.com/chapter2" },
-                                "children": [
-                                    {
-                                        "text": "Section 2.1",
-                                        "a_attr": { "href": "https://example.com/section21" }
-                                    },
-                                    {
-                                        "text": "Section 2.2",
-                                        "a_attr": { "href": "https://example.com/section22" }
-                                    },
-                                    {
-                                        "text": "Section 2.3",
-                                        "a_attr": { "href": "https://example.com/section23" }
-                                    }
-                                ]
-                            },
-                            {
-                                "text": "Chapter 3",
-                                "a_attr": { "href": "https://example.com/chapter3" },
-                                "children": [
-                                    {
-                                        "text": "Section 3.1",
-                                        "a_attr": { "href": "https://example.com/section31" }
-                                    },
-                                    {
-                                        "text": "Section 3.2",
-                                        "a_attr": { "href": "https://example.com/section32" }
-                                    }
-                                ]
-                            },
-                            {
-                                "text": "Appendices",
-                                "a_attr": { "href": "https://example.com/appendices" },
-                                "children": [
-                                    {
-                                        "text": "Appendix A",
-                                        "a_attr": { "href": "https://example.com/appendixA" }
-                                    },
-                                    {
-                                        "text": "Appendix B",
-                                        "a_attr": { "href": "https://example.com/appendixB" }
-                                    },
-                                    {
-                                        "text": "Appendix C",
-                                        "a_attr": { "href": "https://example.com/appendixC" }
-                                    }
-                                ]
-                            },
-                            {
-                                "text": "Bibliography",
-                                "a_attr": { "href": "https://example.com/bibliography" }
-                            },
-                            {
-                                "text": "About Author",
-                                "a_attr": { "href": "https://example.com/author" }
-                            }
-                        ]
-                    }
-                ]
-            }
-        });
+// ---- Define the tree data ----
+const data = {
+  name: "Nyāya Texts",
+  children: [
+    {
+      name: "न्यायसूत्रभाष्यम् (वार्तिकसहितम्)",
+      children: [
+        { name: "न्यायसूत्राणि", link: "#" }
+      ]
+    },
+    {
+      name: "तत्त्वचिन्तामणिः (४ पृ)",
+      children: [
+        { name: "तत्त्वचिन्तामणौ शब्दखण्डः", link: "#" }
+      ]
+    },
+    { name: "तत्त्वार्थसूत्रम् (१० पृ)", link: "#" },
+    { name: "तर्कसङ्ग्रहः (९ पृ)", link: "#" },
+    { name: "तर्कभाषा", link: "#" },
+    { name: "तर्कशास्त्रम्", link: "#" },
+    { name: "न्यायकुसुमाञ्जली (६ पृ)", link: "#" },
+    { name: "न्यायसिद्धान्तमुक्तावली", link: "#" },
+    { name: "पूर्वपक्षीयव्याप्तिः", link: "#" },
+    { name: "सर्वलक्षणपदार्थलक्षणसंग्रहः", link: "#" }
+  ]
+};
 
-        // Open link in new tab when clicked
-        $('#tree').on("select_node.jstree", function (e, data) {
-            window.open(data.node.a_attr.href, '_blank');
-        });
-    });
+// ---- Basic SVG Setup ----
+const width = 1200;
+const height = 800;
+
+const svg = d3.select("svg")
+  .attr("viewBox", [-width/2, -height/2, width, height]);
+
+const treeLayout = d3.tree().size([width - 200, height - 200]);
+const root = d3.hierarchy(data);
+
+treeLayout(root);
+
+// ---- Draw Links (branches) ----
+svg.selectAll(".link")
+  .data(root.links())
+  .join("path")
+  .attr("class", "link")
+  .attr("d", d3.linkVertical()
+    .x(d => d.x)
+    .y(d => d.y));
+
+// ---- Draw Nodes ----
+const node = svg.selectAll(".node")
+  .data(root.descendants())
+  .join("g")
+  .attr("class", "node")
+  .attr("transform", d => `translate(${d.x},${d.y})`);
+
+// ---- Circle markers ----
+node.append("circle")
+  .attr("r", 5)
+  .style("fill", d => d.children ? "#555" : "#999");
+
+// ---- Node Text (labels) ----
+node.append("text")
+  .attr("dy", -10)
+  .attr("x", d => d.children ? -12 : 12)
+  .attr("text-anchor", d => d.children ? "end" : "start")
+  .attr("class", d => d.data.link ? "clickable" : "")
+  .text(d => d.data.name)
+  .on("click", (event, d) => {
+    if (d.data.link) {
+      window.open(d.data.link, "_blank");
+    }
+  });
+
 </script>
 
 </body>
