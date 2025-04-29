@@ -1,1 +1,1 @@
-# textual-tree
+# textual-tree for Nyāya Texts
