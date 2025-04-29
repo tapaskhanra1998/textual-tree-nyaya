@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>न्यायग्रन्थाः - Final Textual Tree (Animated)</title>
+  <title>न्यायग्रन्थाः - Final Textual Tree</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body {
@@ -28,28 +28,31 @@
 
     .node circle {
       fill: #555;
-      cursor: pointer;
     }
 
     .node text {
       font-size: 15px;
-      fill: #222;
+    }
+
+    .expandable {
+      fill: maroon;
+      font-weight: bold;
       cursor: pointer;
     }
 
     .clickable {
       fill: blue;
-      cursor: pointer;
       text-decoration: underline;
+      cursor: pointer;
     }
   </style>
 </head>
-
 <body>
 
 <svg width="800" height="600"></svg>
 
 <script>
+// Define tree data
 const data = {
   name: "न्यायग्रन्थाः",
   children: [
@@ -91,61 +94,50 @@ const treeLayout = d3.tree()
 
 let root = d3.hierarchy(data, d => d.children);
 
-// Collapse all child nodes
+// Collapse all except root
 root.children.forEach(collapse);
 
-let gLink = svg.append("g")
+treeLayout(root);
+
+const gLink = svg.append("g")
   .attr("fill", "none")
   .attr("stroke", "#555")
   .attr("stroke-opacity", 0.4)
   .attr("stroke-width", 1.5);
 
-let gNode = svg.append("g")
+const gNode = svg.append("g")
   .attr("cursor", "pointer");
 
 update(root);
 
 function update(source) {
-  const duration = 750;
-  
-  const nodes = root.descendants().reverse();
+  const nodes = root.descendants();
   const links = root.links();
 
   treeLayout(root);
 
-  // Update the links
+  // Update links
   const link = gLink.selectAll("path")
     .data(links, d => d.target.data.name);
 
-  link.join(
-    enter => enter.append("path")
-      .attr("d", d => {
-        const o = {x: source.x0 || source.x, y: source.y0 || source.y};
-        return diagonal({source: o, target: o});
-      })
-      .transition().duration(duration)
-      .attr("d", diagonal),
-    update => update.transition().duration(duration)
-      .attr("d", diagonal),
-    exit => exit.transition().duration(duration)
-      .attr("d", d => {
-        const o = {x: source.x, y: source.y};
-        return diagonal({source: o, target: o});
-      })
-      .remove()
-  );
+  link.join("path")
+    .transition()
+    .attr("d", d3.linkVertical()
+      .x(d => d.y + 100)
+      .y(d => d.x + 40)
+    );
 
-  // Update the nodes
+  // Update nodes
   const node = gNode.selectAll("g")
     .data(nodes, d => d.data.name);
 
-  const nodeEnter = node.enter().append("g")
-    .attr("transform", d => `translate(${source.y0 || source.y},${source.x0 || source.x})`)
+  const nodeEnter = node.join("g")
+    .attr("transform", d => `translate(${d.y + 100},${d.x + 40})`)
     .on("click", (event, d) => {
       if (d.children) {
         d._children = d.children;
         d.children = null;
-      } else {
+      } else if (d._children) {
         d.children = d._children;
         d._children = null;
       }
@@ -153,43 +145,25 @@ function update(source) {
     });
 
   nodeEnter.append("circle")
-    .attr("r", 1e-6)
-    .attr("fill", d => d._children ? "#555" : "#999");
+    .attr("r", 4)
+    .attr("fill", d => d._children || d.children ? "#555" : "#999");
 
   nodeEnter.append("text")
     .attr("dy", "0.31em")
     .attr("x", d => d.children || d._children ? -10 : 10)
     .attr("text-anchor", d => d.children || d._children ? "end" : "start")
-    .attr("class", d => d.data.link ? "clickable" : "")
+    .attr("class", d => {
+      if (d._children || d.children) return "expandable";
+      if (d.data.link) return "clickable";
+      return "";
+    })
     .text(d => d.data.name)
     .on("click", (event, d) => {
-      event.stopPropagation();
+      event.stopPropagation(); // prevent bubbling
       if (d.data.link) {
         window.open(d.data.link, "_blank");
       }
     });
-
-  node.merge(nodeEnter)
-    .transition().duration(duration)
-    .attr("transform", d => `translate(${d.y + 100},${d.x + 40})`);
-
-  node.merge(nodeEnter).select("circle")
-    .transition().duration(duration)
-    .attr("r", 4)
-    .attr("fill", d => d._children ? "#555" : "#999");
-
-  // Save the old positions for transition.
-  root.each(d => {
-    d.x0 = d.x;
-    d.y0 = d.y;
-  });
-}
-
-function diagonal(d) {
-  return `M${d.source.y + 100},${d.source.x + 40}
-          C${d.source.y + 150},${d.source.x + 40}
-           ${d.target.y + 50},${d.target.x + 40}
-           ${d.target.y + 100},${d.target.x + 40}`;
 }
 
 function collapse(d) {
