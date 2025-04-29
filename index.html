@@ -31,7 +31,7 @@
     }
 
     .node circle.expand-button {
-      fill: red;
+      fill: red; /* proper red */
       cursor: pointer;
     }
 
@@ -81,8 +81,13 @@ const data = {
       children: [
         { name: "📖 प्रस्तावना", link: "#" },
         { name: "📖 सप्तपदार्थ", link: "#" },
-        { name: "📖 दृष्टान्तखण्डः", link: "#" },
-        { name: "📖 न्यायदर्शनम्", link: "#" } // New Subnode Added
+        {
+          name: "📖 दृष्टान्तखण्डः",
+          children: [  // Sub-subnode added
+            { name: "📖 दीपिका टीका", link: "#" }
+          ]
+        },
+        { name: "📖 न्यायदर्शनम्", link: "#" }
       ]
     }
   ]
@@ -146,10 +151,15 @@ function update(source) {
     .attr("cx", -15)
     .attr("cy", 0)
     .on("click", (event, d) => {
-      d.children = d.children ? null : d._children;
-      d._children = d.children ? null : d._children;
+      if (d.children) {
+        d._children = d.children;
+        d.children = null;
+      } else if (d._children) {
+        d.children = d._children;
+        d._children = null;
+      }
       update(d);
-      event.stopPropagation(); // Prevent event bubbling
+      event.stopPropagation(); // stop click on red circle from triggering text click
     });
 
   // Main visual node
