@@ -26,12 +26,18 @@
       stroke-width: 1.5px;
     }
 
+    .link-label {
+      font-size: 12px;
+      fill: #555;
+      text-anchor: middle;
+    }
+
     .node circle.main {
       fill: #555;
     }
 
     .node circle.expand-button {
-      fill: red; /* proper red */
+      fill: red;
       cursor: pointer;
     }
 
@@ -53,7 +59,7 @@
 </head>
 <body>
 
-<svg width="800" height="600"></svg>
+<svg></svg>
 
 <script>
 // Define tree data
@@ -63,51 +69,40 @@ const data = {
     {
       name: "न्यायसूत्रभाष्यम्",
       children: [
-        { name: "📖 न्यायसूत्राणि", link: "#" },
-        { name: "📖 वार्तिकम्", link: "#" },
-        { name: "📖 टीका", link: "#" }
+        { name: "📖 न्यायसूत्राणि", link: "#", relation: "Source Text" },
+        { name: "📖 वार्तिकम्", link: "#", relation: "Commentary" },
+        { name: "📖 टीका", link: "#", relation: "Sub-commentary" }
       ]
     },
     {
       name: "तत्त्वचिन्तामणिः",
       children: [
-        { name: "📖 शब्दखण्डः", link: "#" },
-        { name: "📖 सप्तदशखण्डः", link: "#" },
-        { name: "📖 आर्षखण्डः", link: "#" }
+        { name: "📖 शब्दखण्डः", link: "#", relation: "Section" },
+        { name: "📖 सप्तदशखण्डः", link: "#", relation: "Section" },
+        { name: "📖 आर्षखण्डः", link: "#", relation: "Section" }
       ]
     },
     {
       name: "तर्कसङ्ग्रहः",
       children: [
-        { name: "📖 प्रस्तावना", link: "#" },
-        { name: "📖 सप्तपदार्थ", link: "#" },
+        { name: "📖 प्रस्तावना", link: "#", relation: "Introduction" },
+        { name: "📖 सप्तपदार्थ", link: "#", relation: "Core Concepts" },
         {
           name: "📖 दृष्टान्तखण्डः",
-          children: [  // Sub-subnode added
-            { name: "📖 दीपिका टीका", link: "#" }
+          relation: "Examples Section",
+          children: [
+            { name: "📖 दीपिका टीका", link: "#", relation: "Commentary" }
           ]
         },
-        { name: "📖 न्यायदर्शनम्", link: "#" }
+        { name: "📖 न्यायदर्शनम्", link: "#", relation: "Translation" }
       ]
     }
   ]
 };
 
-const width = 800;
-const height = 600;
+const margin = { top: 40, right: 120, bottom: 40, left: 120 };
 
-const svg = d3.select("svg")
-  .attr("viewBox", [0, 0, width, height]);
-
-const treeLayout = d3.tree()
-  .size([height - 80, width - 200]);
-
-let root = d3.hierarchy(data, d => d.children);
-
-// Collapse all except root
-root.children.forEach(collapse);
-
-treeLayout(root);
+const svg = d3.select("svg");
 
 const gLink = svg.append("g")
   .attr("fill", "none")
@@ -117,13 +112,33 @@ const gLink = svg.append("g")
 
 const gNode = svg.append("g");
 
+let treeLayout = d3.tree();
+
+let root = d3.hierarchy(data, d => d.children);
+
+// Collapse all
+root.children.forEach(collapse);
+
 update(root);
 
 function update(source) {
   const nodes = root.descendants();
   const links = root.links();
 
+  const dx = 40; // vertical gap
+  const dy = 200; // horizontal gap
+  treeLayout.nodeSize([dx, dy]);
   treeLayout(root);
+
+  const left = root.leaves().reduce((acc, d) => Math.min(acc, d.x), root.x);
+  const right = root.leaves().reduce((acc, d) => Math.max(acc, d.x), root.x);
+  const height = right - left + margin.top + margin.bottom;
+  const width = d3.max(nodes, d => d.y) + margin.left + margin.right;
+
+  svg
+    .attr("viewBox", [0, 0, width, height])
+    .attr("width", width)
+    .attr("height", height);
 
   // Update links
   const link = gLink.selectAll("path")
@@ -131,19 +146,30 @@ function update(source) {
 
   link.join("path")
     .transition()
-    .attr("d", d3.linkVertical()
-      .x(d => d.y + 100)
-      .y(d => d.x + 40)
+    .attr("d", d3.linkHorizontal()
+      .x(d => d.y + margin.left)
+      .y(d => d.x - left + margin.top)
     );
+
+  // Add link labels
+  const linkLabel = svg.selectAll(".link-label")
+    .data(links, d => d.target.data.name);
+
+  linkLabel.join("text")
+    .attr("class", "link-label")
+    .attr("x", d => (d.source.y + d.target.y)/2 + margin.left)
+    .attr("y", d => (d.source.x + d.target.x)/2 - left + margin.top - 5)
+    .text(d => d.target.data.relation ? d.target.data.relation : "")
+    .attr("pointer-events", "none"); // labels don't capture mouse
 
   // Update nodes
   const node = gNode.selectAll("g")
     .data(nodes, d => d.data.name);
 
   const nodeEnter = node.join("g")
-    .attr("transform", d => `translate(${d.y + 100},${d.x + 40})`);
+    .attr("transform", d => `translate(${d.y + margin.left},${d.x - left + margin.top})`);
 
-  // Red clickable button only for expandable nodes
+  // Red button for expandable nodes
   nodeEnter.filter(d => d._children || d.children)
     .append("circle")
     .attr("class", "expand-button")
@@ -151,18 +177,12 @@ function update(source) {
     .attr("cx", -15)
     .attr("cy", 0)
     .on("click", (event, d) => {
-      if (d.children) {
-        d._children = d.children;
-        d.children = null;
-      } else if (d._children) {
-        d.children = d._children;
-        d._children = null;
-      }
+      d.children = d.children ? null : d._children;
+      d._children = d.children ? null : d._children;
       update(d);
-      event.stopPropagation(); // stop click on red circle from triggering text click
+      event.stopPropagation();
     });
 
-  // Main visual node
   nodeEnter.append("circle")
     .attr("class", "main")
     .attr("r", 4)
