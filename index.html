@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>न्यायग्रन्थाः - Final Textual Tree</title>
-
   <script src="https://d3js.org/d3.v7.min.js"></script>
-
   <style>
     body {
       font-family: 'Noto Sans Devanagari', sans-serif;
@@ -30,7 +28,6 @@
 
     .node circle {
       fill: #555;
-      r: 4px;
     }
 
     .node text {
@@ -43,12 +40,16 @@
       cursor: pointer;
       text-decoration: underline;
     }
+
+    .book-icon {
+      font-size: 14px;
+      margin-right: 5px;
+    }
   </style>
 </head>
-
 <body>
 
-<svg width="800" height="600"></svg> <!-- Increased page size -->
+<svg width="800" height="600"></svg>
 
 <script>
 // Define tree data
@@ -58,25 +59,25 @@ const data = {
     {
       name: "न्यायसूत्रभाष्यम्",
       children: [
-        { name: "न्यायसूत्राणि", link: "#" },
-        { name: "वार्तिकम्", link: "#" },
-        { name: "टीका", link: "#" }
+        { name: "📖 न्यायसूत्राणि", link: "#" },
+        { name: "📖 वार्तिकम्", link: "#" },
+        { name: "📖 टीका", link: "#" }
       ]
     },
     {
       name: "तत्त्वचिन्तामणिः",
       children: [
-        { name: "शब्दखण्डः", link: "#" },
-        { name: "सप्तदशखण्डः", link: "#" },
-        { name: "आर्षखण्डः", link: "#" }
+        { name: "📖 शब्दखण्डः", link: "#" },
+        { name: "📖 सप्तदशखण्डः", link: "#" },
+        { name: "📖 आर्षखण्डः", link: "#" }
       ]
     },
     {
       name: "तर्कसङ्ग्रहः",
       children: [
-        { name: "प्रस्तावना", link: "#" },
-        { name: "सप्तपदार्थ", link: "#" },
-        { name: "दृष्टान्तखण्डः", link: "#" }
+        { name: "📖 प्रस्तावना", link: "#" },
+        { name: "📖 सप्तपदार्थ", link: "#" },
+        { name: "📖 दृष्टान्तखण्डः", link: "#" }
       ]
     }
   ]
@@ -86,46 +87,88 @@ const width = 800;
 const height = 600;
 
 const svg = d3.select("svg")
-  .attr("viewBox", [0, 0, width, height]); // Top-left start
+  .attr("viewBox", [0, 0, width, height]);
 
 const treeLayout = d3.tree()
-  .size([height - 80, width - 200]); // Reduce margin inside layout
-const root = d3.hierarchy(data);
+  .size([height - 80, width - 200]);
+
+let root = d3.hierarchy(data, d => d.children);
+
+// Collapse all except root's direct children
+root.children.forEach(collapse);
 
 treeLayout(root);
 
-// Draw links
-svg.selectAll(".link")
-  .data(root.links())
-  .join("path")
-  .attr("class", "link")
-  .attr("d", d3.linkVertical()
-    .x(d => d.y + 100)  // More margin horizontally
-    .y(d => d.x + 40)); // Slight margin vertically
+const gLink = svg.append("g")
+  .attr("fill", "none")
+  .attr("stroke", "#555")
+  .attr("stroke-opacity", 0.4)
+  .attr("stroke-width", 1.5);
 
-// Draw nodes
-const node = svg.selectAll(".node")
-  .data(root.descendants())
-  .join("g")
-  .attr("class", "node")
-  .attr("transform", d => `translate(${d.y + 100},${d.x + 40})`);
+const gNode = svg.append("g")
+  .attr("cursor", "pointer");
 
-node.append("circle")
-  .attr("r", 4)
-  .style("fill", d => d.children ? "#555" : "#999");
+update(root);
 
-node.append("text")
-  .attr("dy", 5)
-  .attr("x", d => d.children ? -10 : 10)
-  .attr("text-anchor", d => d.children ? "end" : "start")
-  .attr("class", d => d.data.link ? "clickable" : "")
-  .text(d => d.data.name)
-  .on("click", (event, d) => {
-    if (d.data.link) {
-      window.open(d.data.link, "_blank");
-    }
-  });
+function update(source) {
+  const nodes = root.descendants();
+  const links = root.links();
 
+  treeLayout(root);
+
+  // Join data for links
+  const link = gLink.selectAll("path")
+    .data(links, d => d.target.data.name);
+
+  link.join("path")
+    .transition()
+    .attr("d", d3.linkVertical()
+      .x(d => d.y + 100)
+      .y(d => d.x + 40)
+    );
+
+  // Join data for nodes
+  const node = gNode.selectAll("g")
+    .data(nodes, d => d.data.name);
+
+  const nodeEnter = node.join("g")
+    .attr("transform", d => `translate(${d.y + 100},${d.x + 40})`)
+    .on("click", (event, d) => {
+      if (d.children) {
+        d._children = d.children;
+        d.children = null;
+      } else {
+        d.children = d._children;
+        d._children = null;
+      }
+      update(d);
+    });
+
+  nodeEnter.append("circle")
+    .attr("r", 4)
+    .attr("fill", d => d._children ? "#555" : "#999");
+
+  nodeEnter.append("text")
+    .attr("dy", "0.31em")
+    .attr("x", d => d.children || d._children ? -10 : 10)
+    .attr("text-anchor", d => d.children || d._children ? "end" : "start")
+    .attr("class", d => d.data.link ? "clickable" : "")
+    .text(d => d.data.name)
+    .on("click", (event, d) => {
+      event.stopPropagation(); // prevent click from bubbling to parent node
+      if (d.data.link) {
+        window.open(d.data.link, "_blank");
+      }
+    });
+}
+
+function collapse(d) {
+  if (d.children) {
+    d._children = d.children;
+    d.children = null;
+    d._children.forEach(collapse);
+  }
+}
 </script>
 
 </body>
