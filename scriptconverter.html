@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Aksharamukha Script Converter – Paste & View</title>
-  <!-- Load the Aksharamukha Web Plugin -->
+  <title>Aksharamukha Viewer – Paste & Convert</title>
   <script src="https://cdn.jsdelivr.net/gh/virtualvinodh/aksharamukha/aksharamukha-web-plugin/aksharamukha-v3.js?prelist=sansktradall&class=convertme"></script>
   <style>
     body {
@@ -26,20 +25,21 @@
       padding: 1.5em;
       border: 1px solid #aaa;
       border-radius: 8px;
-      background: #fafafa;
+      background: #fdfdfd;
       font-size: 1.3em;
       line-height: 1.8em;
       white-space: pre-wrap;
+      min-height: 150px;
     }
   </style>
 </head>
 <body>
 
-  <h1>Paste Sanskrit Text – View in Multiple Scripts</h1>
+  <h1>Sanskrit Script Converter (Paste and View)</h1>
 
-  <p>Paste any Sanskrit or Indic text below (in IAST, Devanagari, etc.). Choose a script from the dropdown (top-right). The result will update automatically.</p>
+  <p>Paste Sanskrit text (e.g., in IAST, Devanagari). The output below updates automatically in the script you choose from the dropdown (top-right).</p>
 
-  <textarea id="textInput" placeholder="Paste your Sanskrit text here...">śrīrāmaḥ vanam gacchati।</textarea>
+  <textarea id="textInput">śrīrāmaḥ vanam gacchati।</textarea>
 
   <div class="convertme" id="liveOutput">
     śrīrāmaḥ vanam gacchati।
@@ -51,6 +51,16 @@
 
     input.addEventListener('input', () => {
       output.textContent = input.value;
+      if (window.AksharamukhaPlugin && AksharamukhaPlugin.reload) {
+        AksharamukhaPlugin.reload();
+      }
+    });
+
+    // Ensure plugin is called once after load
+    window.addEventListener('load', () => {
+      if (window.AksharamukhaPlugin && AksharamukhaPlugin.reload) {
+        AksharamukhaPlugin.reload();
+      }
     });
   </script>
 
