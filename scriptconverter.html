@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Sanskrit Script Viewer – Aksharamukha</title>
-  <script src="https://cdn.jsdelivr.net/gh/virtualvinodh/aksharamukha/aksharamukha-js@master/aksharamukha.min.js"></script>
+  <title>Aksharamukha Script Converter – Paste & View</title>
+  <!-- Load the Aksharamukha Web Plugin -->
+  <script src="https://cdn.jsdelivr.net/gh/virtualvinodh/aksharamukha/aksharamukha-web-plugin/aksharamukha-v3.js?prelist=sansktradall&class=convertme"></script>
   <style>
     body {
       font-family: sans-serif;
@@ -13,21 +14,15 @@
     }
     textarea {
       width: 100%;
-      height: 200px;
+      height: 250px;
       font-size: 1.1em;
       padding: 1em;
-      margin-bottom: 1em;
-      border-radius: 8px;
       border: 1px solid #bbb;
+      border-radius: 8px;
+      margin-bottom: 2em;
       resize: vertical;
     }
-    select {
-      font-size: 1.1em;
-      padding: 0.5em;
-      margin-bottom: 1em;
-      border-radius: 6px;
-    }
-    .output {
+    .convertme {
       padding: 1.5em;
       border: 1px solid #aaa;
       border-radius: 8px;
@@ -36,50 +31,27 @@
       line-height: 1.8em;
       white-space: pre-wrap;
     }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 1em;
-    }
   </style>
 </head>
 <body>
 
-  <h1>Aksharamukha Script Viewer</h1>
+  <h1>Paste Sanskrit Text – View in Multiple Scripts</h1>
 
-  <label for="inputText">Paste Sanskrit text (in IAST, Devanagari, etc.):</label>
-  <textarea id="inputText">śrīrāmaḥ vanam gacchati।</textarea>
+  <p>Paste any Sanskrit or Indic text below (in IAST, Devanagari, etc.). Choose a script from the dropdown (top-right). The result will update automatically.</p>
 
-  <label for="targetScript">Choose Script to View:</label>
-  <select id="targetScript">
-    <option value="Devanagari">Devanagari</option>
-    <option value="ISO">IAST (Roman)</option>
-    <option value="Tamil">Tamil</option>
-    <option value="Telugu">Telugu</option>
-    <option value="Kannada">Kannada</option>
-    <option value="Malayalam">Malayalam</option>
-    <option value="Grantha">Grantha</option>
-    <option value="Sharada">Sharada</option>
-  </select>
+  <textarea id="textInput" placeholder="Paste your Sanskrit text here...">śrīrāmaḥ vanam gacchati।</textarea>
 
-  <div class="output" id="convertedOutput">Converted text will appear here...</div>
+  <div class="convertme" id="liveOutput">
+    śrīrāmaḥ vanam gacchati।
+  </div>
 
   <script>
-    const input = document.getElementById('inputText');
-    const output = document.getElementById('convertedOutput');
-    const target = document.getElementById('targetScript');
+    const input = document.getElementById('textInput');
+    const output = document.getElementById('liveOutput');
 
-    async function updateOutput() {
-      const sourceText = input.value;
-      const result = await Aksharamukha.convert("autodetect", target.value, sourceText);
-      output.textContent = result;
-    }
-
-    input.addEventListener('input', updateOutput);
-    target.addEventListener('change', updateOutput);
-
-    // Initial conversion
-    updateOutput();
+    input.addEventListener('input', () => {
+      output.textContent = input.value;
+    });
   </script>
 
 </body>
