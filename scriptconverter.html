@@ -2,47 +2,82 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Aksharamukha Script Converter</title>
-  <script src="https://cdn.jsdelivr.net/gh/virtualvinodh/aksharamukha/aksharamukha-web-plugin/aksharamukha-v3.js?prelist=sansktradall&class=convertme"></script>
+  <title>Aksharamukha Script Converter – Sanskrit Input</title>
+  <script src="https://cdn.jsdelivr.net/gh/virtualvinodh/aksharamukha/aksharamukha-js@master/aksharamukha.min.js"></script>
   <style>
     body {
       font-family: sans-serif;
-      padding: 2em;
       max-width: 800px;
-      margin: auto;
-    }
-    #aksharamukha-navbar {
-      position: fixed;
-      top: 0;
-      right: 0;
-      z-index: 9999;
-    }
-    .convertme {
+      margin: 2em auto;
       padding: 1em;
-      margin-top: 3em;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      background: #fdfdfd;
-      line-height: 1.6;
+      background: #fefefe;
     }
-    h1 {
-      font-size: 1.8em;
+    textarea, select, button {
+      width: 100%;
+      padding: 1em;
+      margin-top: 1em;
+      font-size: 1.1em;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      resize: vertical;
+    }
+    button {
+      background: #333;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #555;
+    }
+    label {
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-  <h1>Script Converter: Sanskrit Text using Aksharamukha</h1>
-  <p>This page allows you to dynamically convert script from one Indic writing system to another. Use the dropdown in the top-right corner to choose your output script.</p>
+  <h1>Aksharamukha Script Converter</h1>
 
-  <div class="convertme">
-    धर्मो रक्षति रक्षितः।<br>
-    śabdaḥ pramāṇam. <br>
-    विद्या ददाति विनयं।<br>
-    वसुधैव कुटुम्बकम्।
-  </div>
+  <label for="sourceText">Enter Sanskrit text (e.g., in Devanagari or Roman):</label>
+  <textarea id="sourceText" rows="5">dharmo rakṣati rakṣitaḥ</textarea>
 
-  <p style="margin-top: 2em;">Feel free to copy-paste your own text inside the box and reload to see the conversion.</p>
+  <label for="sourceScript">Source Script:</label>
+  <select id="sourceScript">
+    <option value="ISO">IAST (Roman)</option>
+    <option value="Devanagari">Devanagari</option>
+    <option value="Kannada">Kannada</option>
+    <option value="Tamil">Tamil</option>
+    <option value="Telugu">Telugu</option>
+    <!-- Add more if needed -->
+  </select>
+
+  <label for="targetScript">Target Script:</label>
+  <select id="targetScript">
+    <option value="Devanagari">Devanagari</option>
+    <option value="Kannada">Kannada</option>
+    <option value="Tamil">Tamil</option>
+    <option value="Telugu">Telugu</option>
+    <option value="Grantha">Grantha</option>
+    <option value="Malayalam">Malayalam</option>
+    <option value="Sharada">Sharada</option>
+    <!-- Add more if needed -->
+  </select>
+
+  <button onclick="convertText()">Convert</button>
+
+  <label for="convertedText">Converted Text:</label>
+  <textarea id="convertedText" rows="5" readonly></textarea>
+
+  <script>
+    async function convertText() {
+      const sourceText = document.getElementById('sourceText').value;
+      const sourceScript = document.getElementById('sourceScript').value;
+      const targetScript = document.getElementById('targetScript').value;
+
+      const result = await Aksharamukha.convert(sourceScript, targetScript, sourceText);
+      document.getElementById('convertedText').value = result;
+    }
+  </script>
 
 </body>
 </html>
