@@ -2,81 +2,84 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Aksharamukha Script Converter – Sanskrit Input</title>
+  <title>Sanskrit Script Viewer – Aksharamukha</title>
   <script src="https://cdn.jsdelivr.net/gh/virtualvinodh/aksharamukha/aksharamukha-js@master/aksharamukha.min.js"></script>
   <style>
     body {
       font-family: sans-serif;
-      max-width: 800px;
+      max-width: 900px;
       margin: 2em auto;
       padding: 1em;
-      background: #fefefe;
     }
-    textarea, select, button {
+    textarea {
       width: 100%;
-      padding: 1em;
-      margin-top: 1em;
+      height: 200px;
       font-size: 1.1em;
-      border: 1px solid #aaa;
-      border-radius: 6px;
+      padding: 1em;
+      margin-bottom: 1em;
+      border-radius: 8px;
+      border: 1px solid #bbb;
       resize: vertical;
     }
-    button {
-      background: #333;
-      color: white;
-      cursor: pointer;
+    select {
+      font-size: 1.1em;
+      padding: 0.5em;
+      margin-bottom: 1em;
+      border-radius: 6px;
     }
-    button:hover {
-      background: #555;
+    .output {
+      padding: 1.5em;
+      border: 1px solid #aaa;
+      border-radius: 8px;
+      background: #fafafa;
+      font-size: 1.3em;
+      line-height: 1.8em;
+      white-space: pre-wrap;
     }
     label {
       font-weight: bold;
+      display: block;
+      margin-top: 1em;
     }
   </style>
 </head>
 <body>
 
-  <h1>Aksharamukha Script Converter</h1>
+  <h1>Aksharamukha Script Viewer</h1>
 
-  <label for="sourceText">Enter Sanskrit text (e.g., in Devanagari or Roman):</label>
-  <textarea id="sourceText" rows="5">dharmo rakṣati rakṣitaḥ</textarea>
+  <label for="inputText">Paste Sanskrit text (in IAST, Devanagari, etc.):</label>
+  <textarea id="inputText">śrīrāmaḥ vanam gacchati।</textarea>
 
-  <label for="sourceScript">Source Script:</label>
-  <select id="sourceScript">
-    <option value="ISO">IAST (Roman)</option>
-    <option value="Devanagari">Devanagari</option>
-    <option value="Kannada">Kannada</option>
-    <option value="Tamil">Tamil</option>
-    <option value="Telugu">Telugu</option>
-    <!-- Add more if needed -->
-  </select>
-
-  <label for="targetScript">Target Script:</label>
+  <label for="targetScript">Choose Script to View:</label>
   <select id="targetScript">
     <option value="Devanagari">Devanagari</option>
-    <option value="Kannada">Kannada</option>
+    <option value="ISO">IAST (Roman)</option>
     <option value="Tamil">Tamil</option>
     <option value="Telugu">Telugu</option>
-    <option value="Grantha">Grantha</option>
+    <option value="Kannada">Kannada</option>
     <option value="Malayalam">Malayalam</option>
+    <option value="Grantha">Grantha</option>
     <option value="Sharada">Sharada</option>
-    <!-- Add more if needed -->
   </select>
 
-  <button onclick="convertText()">Convert</button>
-
-  <label for="convertedText">Converted Text:</label>
-  <textarea id="convertedText" rows="5" readonly></textarea>
+  <div class="output" id="convertedOutput">Converted text will appear here...</div>
 
   <script>
-    async function convertText() {
-      const sourceText = document.getElementById('sourceText').value;
-      const sourceScript = document.getElementById('sourceScript').value;
-      const targetScript = document.getElementById('targetScript').value;
+    const input = document.getElementById('inputText');
+    const output = document.getElementById('convertedOutput');
+    const target = document.getElementById('targetScript');
 
-      const result = await Aksharamukha.convert(sourceScript, targetScript, sourceText);
-      document.getElementById('convertedText').value = result;
+    async function updateOutput() {
+      const sourceText = input.value;
+      const result = await Aksharamukha.convert("autodetect", target.value, sourceText);
+      output.textContent = result;
     }
+
+    input.addEventListener('input', updateOutput);
+    target.addEventListener('change', updateOutput);
+
+    // Initial conversion
+    updateOutput();
   </script>
 
 </body>
